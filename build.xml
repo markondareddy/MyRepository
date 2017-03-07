@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="AntProject" basedir="." default="test">
+
+	<property name="src.dir" value="src" />
+	<property name="WebContent.dir" value="WebContent" />
+	<property name="build.dir" value="build/classes" />
+	<property name="WebContent.dir" value="WebContent" />
+	<property name="lib.dir" value="${WebContent.dir}/WEB-INF/lib" />
+	<property name="dist.dir" value="dist" />
+	<property name="test.reports" value="reports" />
+
+	<path id="master-classpath">
+		<pathelement location="${build.dir}" />
+		<pathelement location="${WebContent.dir}/WEB-INF/lib/junit.jar" />
+		<fileset dir="${WebContent.dir}/WEB-INF/lib">
+			<include name="**/*.jar" />
+		</fileset>
+		<pathelement path="${build.dir}" />
+	</path>
+
+	<target name="clean">
+		<delete>
+			<fileset dir="${dist.dir}">
+				<include name="*.war" />
+				<include name="*.jar" />
+			</fileset>
+		</delete>
+		<delete>
+			<fileset dir="${build.dir}">
+				<include name="*.class" />
+			</fileset>
+		</delete>
+		<delete dir="${test.reports}" />
+		<echo>clean success</echo>
+	</target>
+
+	<target name="prepare" depends="clean">
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${dist.dir}" />
+		<mkdir dir="${test.reports}" />
+		<echo>Directories is created</echo>
+	</target>
+
+	<target name="compile" depends="prepare">
+		<javac includeantruntime="false" destdir="${build.dir}" srcdir="${src.dir}" source="1.7" target="1.7" debug="true">
+			<classpath refid="master-classpath">
+			</classpath>
+		</javac>
+		<echo>Compilation is success</echo>
+
+	</target>
+	
+	<target name="jar" depends="compile">
+			<jar destfile="${dist.dir}/${ant.project.name}.jar" basedir="${build.dir}" >
+				<include name="**/*.class" />
+				<exclude name="**/*Test.class" />
+				<manifest>
+					<attribute name="Main-Class" value="com.test.*" />
+				</manifest>
+			</jar>
+			<echo>Jar is created</echo>
+		</target>
+
+		<target name="war" depends="jar">
+			<war destfile="${dist.dir}/${ant.project.name}.war" webxml="${WebContent.dir}/WEB-INF/web.xml">
+				<fileset dir="${WebContent.dir}">
+					<include name="**/*.jsp"/>
+					<include name="**/*.html"/>
+					<include name="**/*.css"/>
+					<include name="**/*.gif"/>
+					<include name="**/*.jpg"/>
+					<include name="**/*.png"/>
+					<include name="**/*.js"/>
+				</fileset>
+				<lib dir="${lib.dir}">
+					<include name="**/*.jar" />
+				</lib>
+				<classes dir="${build.dir}" />
+				<manifest>
+					<attribute name="Main-Class" value="com.test*.*" />
+				</manifest>
+			</war>
+			<echo>War is created</echo>
+		</target>
+
+	<target name="run-tests" depends="compile,jar,war">
+		<junit printsummary="yes" haltonfailure="yes" showoutput="yes">
+			<classpath>
+				<pathelement path="${build.dir}" />
+				<fileset dir="${WebContent.dir}/WEB-INF/lib">
+					<include name="**/*.jar" />
+				</fileset>
+			</classpath>
+
+			<batchtest fork="yes" todir="${test.reports}">
+				<formatter type="xml" />
+				<fileset dir="${src.dir}">
+					<include name="**/*Test*.java" />
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
+
+	<target name="test" depends="run-tests">
+		<junitreport todir="${test.reports}">
+			<fileset dir="${test.reports}">
+				<include name="TEST-*.xml" />
+			</fileset>
+			<report format="noframes" todir="${reports}\html\" />
+		</junitreport>
+	</target>
+
+	<!--
+  
+	<target name="test" depends="compile">
+		<junit fork="yes" haltonfailure="no">
+			<batchtest fork="yes" todir="${test.reports}">
+				<fileset dir="${build.dir}">
+					<include name="**/*Test.class" />
+				</fileset>
+			</batchtest>
+			<formatter type="plain" usefile="false" />
+			<classpath refid="master-classpath" />
+		</junit>
+		<echo>Junit class is tested</echo>
+	</target>
+-->
+
+</project>
