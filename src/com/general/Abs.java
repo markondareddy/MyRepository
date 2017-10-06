@@ -13,6 +13,11 @@ public class Abs {
 	        System.out.println("Host Name: "+url.getHost());  
 	        System.out.println("Port Number: "+url.getPort());  
 	        System.out.println("File Name: "+url.getFile()); 
+			
+			
+			
+			
+			
 	        
 	        }
 	}
